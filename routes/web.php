@@ -22,7 +22,9 @@ foreach (config('tenancy.central_domains') as $domain) {
             Volt::route('settings/password', 'settings.password')->name('settings.password');
             Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
 
-            Route::resource('tenants', TenantController::class)->except(['show']);
+            Volt::route('tenants', 'tenants.index')->name('tenants.index');
+            Volt::route('tenants/create', 'tenants.create')->name('tenants.create');
+            Volt::route('tenants/{tenant}/edit', 'tenants.edit')->name('tenants.edit');
         });
 
         require __DIR__ . '/auth.php';
