@@ -16,6 +16,10 @@ new class extends Component {
     public function update()
     {
         $this->tenant->update(['id' => $this->id]);
+        $this->tenant->domains()->updateOrCreate(
+            ['tenant_id' => $this->tenant->id],
+            ['domain' => $this->id . '.localhost']
+        );
         return redirect()->route('tenants.index');
     }
 }; ?>

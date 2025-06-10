@@ -9,14 +9,17 @@ new class extends Component {
 
     public function register(): void
     {
-        // Example: Validate and handle registration logic
-        $validated = $this->validate([
-            'id' => 'required|string|max:255',
+
+        $this->validate([
+            'id' => ['required', 'string', 'max:255'],
         ]);
 
-        event(new Registered(($tenant = Tenant::create($validated))));
+        $tenant = Tenant::create(['id' => $this->id]);
+        $tenant->domains()->create(['domain' => $this->id . '.localhost']);
 
-        $this->redirectIntended(route('tenants.index', absolute: false), navigate: true);
+        event(new Registered($tenant));
+
+        $this->redirect(route('tenants.index'), navigate: true);
     }
 }; ?>
 

@@ -5,24 +5,26 @@ use App\Models\Tenant;
 
 new class extends Component {
     public $tenants;
+    // public $tenantId;
 
     public function mount()
     {
         $this->tenants = Tenant::all();
     }
 
-    function destroy($tenantId)
+    public function destroy(array $tenant)
     {
         try {
-            dd($tenantId);
-            $tenant = Tenant::findOrFail($tenantId);
+            $tenant = Tenant::findOrFail($tenant['id']);
             $tenant->delete();
-            $this->tenants = Tenant::with('domains')->get(); // Actualiza la propiedad
+            $this->tenants = Tenant::all();
+            session()->flash('success', 'Inquilino eliminado con éxito.');
         } catch (\Exception $e) {
-            // Manejo de errores, podrías usar un mensaje flash o similar
+            session()->flash('error', 'Error al eliminar el inquilino: ' . $e->getMessage());
         }
     }
-}; ?>
+};
+?>
 
 <div>
     <div class="mb-4 flex items-center justify-between">
@@ -37,15 +39,9 @@ new class extends Component {
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
-                    <th scope="col" class="px-6 py-3">
-                        Id
-                    </th>
-                    <th scope="col" class="px-6 py-3">
-                        Dominio
-                    </th>
-                    <th scope="col" class="px-6 py-3">
-                        Acción
-                    </th>
+                    <th scope="col" class="px-6 py-3">Id</th>
+                    <th scope="col" class="px-6 py-3">Dominio</th>
+                    <th scope="col" class="px-6 py-3">Acción</th>
                 </tr>
             </thead>
             <tbody>
@@ -56,17 +52,23 @@ new class extends Component {
                             class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                             {{ $tenant->id }}
                         </th>
-                        {{-- <td class="px-6 py-4">
-                            {{ $tenant->domains->first()->domain ?? '' }}
-                        </td> --}}
                         <td class="px-6 py-4">
-                            <a href="{{ route('tenants.edit', $tenant) }}"
-                                class="text-blue-500 hover:underline">Edit</a>
-                            <form wire:submit="destroy({{ $tenant->id }})" class="inline">
-                                <button type="submit" class="text-red-500 hover:underline ml-2">
-                                    Delete
-                                </button>
-                            </form>
+                            @if ($tenant->domains->isNotEmpty())
+                                {{ $tenant->domains->first()->domain }}
+                            @else
+                                No domain assigned
+                            @endif
+                        </td> <!-- Cierre de etiqueta corregido -->
+                        <td class="px-6 py-4">
+                             <flux:button variant="primary" class="mr-2"
+                                href="{{ route('tenants.edit', $tenant) }}">
+                                {{ __('Edit') }}
+                            </flux:button>
+
+                            <button type="button" wire:click="destroy({{ $tenant }})"
+                                class="text-red-500 hover:underline ml-2">
+                                Delete
+                            </button>
                         </td>
                     </tr>
                 @endforeach
